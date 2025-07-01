@@ -1,13 +1,17 @@
+# ✅ MB Bot Full Smart Code (main.py)
+# Handles: Video request (simulated), Voice generation (Hindi-English), Thumbnail, Titles
+
 import telebot
 from telebot import types
 from datetime import datetime
-import random
+from gtts import gTTS
+import os
 
 # ✅ Telegram Bot Token
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = "7749636877:AAEC-6LJNgyDk776bhLsmW7d2pQT1VfQh28"
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# ✅ Utility: Generate Dummy Titles
+# ✅ Generate Dummy Titles
 def generate_titles(topic):
     topic = topic.title()
     return [
@@ -16,9 +20,15 @@ def generate_titles(topic):
         f"Top 5 Reasons to Consider {topic} – Must Watch!"
     ]
 
-# ✅ Utility: Send Loading Message
+# ✅ Generate Voice-over in Hindi-English
+def generate_voice(text, filename='voice.mp3'):
+    tts = gTTS(text=text, lang='hi', slow=False)
+    tts.save(filename)
+    return filename
+
+# ✅ Processing Message
 def send_processing_message(chat_id):
-    bot.send_message(chat_id, "⏳ Processing your request...\nPlease wait 30–60 seconds...")
+    bot.send_message(chat_id, "⏳ Processing your request... Please wait 30–60 seconds...")
 
 # ✅ Message Handler
 @bot.message_handler(func=lambda message: True)
@@ -26,7 +36,7 @@ def handle_message(message):
     user_msg = message.text.lower()
     chat_id = message.chat.id
 
-    # Trigger words
+    # Trigger: Video Request
     if "video chahiye" in user_msg:
         send_processing_message(chat_id)
 
@@ -45,28 +55,30 @@ def handle_message(message):
             duration = "1"
             duration_type = "minute"
 
-        # Check extras
         want_voice = "voice" in user_msg or "voice-over" in user_msg
         want_music = "music" in user_msg
         want_thumb = "thumbnail" in user_msg
         want_titles = "title" in user_msg or "3 titles" in user_msg
 
-        # Generate Fake Output
         msg = f"✅ Video for *{topic}* ({duration} {duration_type}) is ready!\n"
         if want_voice:
+            script = f"Yeh hai {topic}, jisme milta hai advanced design, modern features aur zabardast performance."
+            voice_file = generate_voice(script)
+            with open(voice_file, 'rb') as audio:
+                bot.send_audio(chat_id, audio)
             msg += "🎙️ Voice-over added\n"
+            os.remove(voice_file)
         if want_music:
-            msg += "🎧 Background music included\n"
+            msg += "🎵 Background music included\n"
         if want_thumb:
             msg += "🖼️ Thumbnail created\n"
         if want_titles:
             titles = generate_titles(topic)
             msg += "\n🏷️ *Suggested Titles:*\n"
             for t in titles:
-                msg += f"• {t}\n"
+                msg += f"\u2022 {t}\n"
 
-        msg += "\n📥 All files are being prepared. You will get downloadable links soon."
-
+        msg += "\n📅 Files generation is simulated. Full video support coming soon."
         bot.send_message(chat_id, msg, parse_mode="Markdown")
 
     elif "thumbnail" in user_msg:
@@ -86,7 +98,7 @@ Just send messages like:
         """, parse_mode="Markdown")
 
     else:
-        bot.send_message(chat_id, "👋 Hi! MB Bot ready hai. Message me likho kya banana hai, jaise:\n'Mujhe 1 min ka video chahiye Tata Curvv pe with voice'")
+        bot.send_message(chat_id, "👋 MB Bot ready hai. Likho: 'mujhe [topic] pe [duration] ka video chahiye voice/music/thumbnail ke sath'")
 
 # ✅ Start polling
 bot.polling()
