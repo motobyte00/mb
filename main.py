@@ -1,31 +1,33 @@
+import os
 import telebot
 from flask import Flask
 import threading
 
-# Telegram bot
-bot = telebot.TeleBot("7749636877:AAEC-6LJNgyDk776bhLsmW7d2pQT1VfQh28")
+# 🔐 Secure token from environment variable
+TOKEN = os.environ.get("TOKEN")
+bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Hello! I'm your MB Bot, now running 24x7 via Web Service.")
+    bot.send_message(message.chat.id, "Hello! I'm MB Bot. I'm 24x7 active 🔥")
 
 @bot.message_handler(func=lambda message: True)
 def echo(message):
-    bot.send_message(message.chat.id, "You said: " + message.text)
+    bot.send_message(message.chat.id, f"You said: {message.text}")
 
-# Run bot in a separate thread
+# 🧠 Bot running thread
 def run_bot():
     bot.polling()
 
 threading.Thread(target=run_bot).start()
 
-# Dummy web server for Render
+# 🌐 Flask web server to keep Render Web Service alive
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "MB Bot is running!"
+    return "MB Bot is running! ✅"
 
-# Keep Flask app alive
+# Start Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
